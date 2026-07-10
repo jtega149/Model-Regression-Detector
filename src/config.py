@@ -1,13 +1,23 @@
-from pydantic import BaseModel
 from typing import Literal
-from .data.llm_constants import emails, system_prompt
+from pydantic import BaseModel, Field
 
-class PromptConfig(BaseModel):
-    version: str
-    system_prompt: str = system_prompt
-    few_shot_examples: list[dict] = emails
+
+Category = Literal["billing", "technical", "account", "general"]
 
 
 class ClassificationOutput(BaseModel):
-    category: Literal["Billing", "Technical", "Account", "General"]
+    category: Category
     summary: str
+
+
+class FewShotExample(BaseModel):
+    input: str
+    output: ClassificationOutput
+
+
+class PromptConfig(BaseModel):
+    version_id: str
+    created_at: str
+    model: str
+    system_prompt: str
+    few_shot_examples: list[FewShotExample] = Field(default_factory=list)

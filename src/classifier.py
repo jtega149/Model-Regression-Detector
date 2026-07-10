@@ -6,27 +6,54 @@ from datetime import datetime
 from openai.types.responses import ResponseInputParam
 from typing import cast
 
-def classify_email(email: str, config: PromptConfig) -> ClassificationOutput:
 
-    # Adding system prompt, few shot examples, and finally actual email to input for llm
-    inputs = [{"role": "system", "content": config.system_prompt}]
-    inputs.extend(config.few_shot_examples)
-    inputs.append({"role": "user", "content": email})
+def build_messages(email: str, config: PromptConfig) -> list[dict[str, str]]:
+    messages = [
+        {
+            "role": "system",
+            "content": config.system_prompt,
+        }
+    ]
 
-    response = client.responses.parse(
-        model="gpt-5.5",
-        input=cast(ResponseInputParam, inputs),
-        text_format=ClassificationOutput
+    for example in config.few_shot_examples:
+        messages.append(
+            {
+                "role": "user",
+                "content": example.input,
+            }
+        )
+        messages.append(
+            {
+                "role": "assistant",
+                "content": example.output.model_dump_json(),
+            }
+        )
+
+    messages.append(
+        {
+            "role": "user",
+            "content": email,
+        }
+    )
+
+    return messages
+
+
+def classify_email(
+    email: str,
+    config: PromptConfig,
+    llm_client=None,
+) -> ClassificationOutput:
+    if llm_client is None:
+        from .llm_client import client as llm_client
+
+    response = llm_client.responses.parse(
+        model=config.model,
+        input=build_messages(email, config),
+        text_format=ClassificationOutput,
     )
 
     if not response.output_parsed:
-        sys.exit(1)
-
-    yaml_file = {
-        'version': config.version,
-        'timestamp': datetime.now().isoformat(),
-        'system_prompt': config.system_prompt,
-        'few_shot_examples': config.few_shot_examples
-    }
+        raise ValueError("Model did not return valid classification output.")
 
     return response.output_parsed
