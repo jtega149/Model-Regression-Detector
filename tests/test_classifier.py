@@ -1,4 +1,6 @@
 from src.classifier import classify_email
+from src.config import PromptConfig
+import uuid
 
 TEST_BILLING = """
 Subject: Cancel subscription renewal
@@ -32,9 +34,9 @@ Thank you.
 """
 
 def run_tests():
-    print("Billing Test: ", classify_email(TEST_BILLING))
-    print("Account Test:", classify_email(TEST_ACCOUNT))
-    print("Technical Test:", classify_email(TEST_TECHNICAL))
-    print("General Test", classify_email(TEST_GENERAL))
+    print("Billing Test: ", classify_email(TEST_BILLING, PromptConfig(version=str(uuid.uuid4()))))
+    print("Account Test:", classify_email(TEST_ACCOUNT, PromptConfig(version=str(uuid.uuid4()))))
+    print("Technical Test:", classify_email(TEST_TECHNICAL, PromptConfig(version=str(uuid.uuid4()))))
+    print("General Test", classify_email(TEST_GENERAL, PromptConfig(version=str(uuid.uuid4()))))
 
 run_tests()
