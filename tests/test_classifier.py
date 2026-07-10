@@ -31,10 +31,15 @@ Could you provide more information about your service and how it works? I would 
 Thank you.
 """
 
-def run_tests():
-    print("Billing Test: ", classify_email(TEST_BILLING))
-    print("Account Test:", classify_email(TEST_ACCOUNT))
-    print("Technical Test:", classify_email(TEST_TECHNICAL))
-    print("General Test", classify_email(TEST_GENERAL))
 
-run_tests()
+def run_tests():
+    config = load_prompt_config("prompts/classifier_v1.yaml")
+
+    print("Billing Test:", classify_email(TEST_BILLING, config))
+    print("Account Test:", classify_email(TEST_ACCOUNT, config))
+    print("Technical Test:", classify_email(TEST_TECHNICAL, config))
+    print("General Test:", classify_email(TEST_GENERAL, config))
+
+
+if __name__ == "__main__":
+    run_tests()

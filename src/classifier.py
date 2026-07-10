@@ -1,22 +1,53 @@
-from .llm_client import client
 from .config import PromptConfig, ClassificationOutput
-import sys
 
-def classify_email(email: str, config: PromptConfig | None = None) -> ClassificationOutput:
-    prompt = """
-    You are a customer support email classifier. You will be given an email by the user that you must classify. Your task is to return a simple classification of the email, the classification can be of the following categories: "Billing", "Technical", "Account", or "General", and as well returning a 2-5 sentence summary of the email.
-    """
 
-    response = client.responses.parse(
-        model="gpt-5.5",
-        input=[
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": email}
-        ],
-        text_format=ClassificationOutput
+def build_messages(email: str, config: PromptConfig) -> list[dict[str, str]]:
+    messages = [
+        {
+            "role": "system",
+            "content": config.system_prompt,
+        }
+    ]
+
+    for example in config.few_shot_examples:
+        messages.append(
+            {
+                "role": "user",
+                "content": example.input,
+            }
+        )
+        messages.append(
+            {
+                "role": "assistant",
+                "content": example.output.model_dump_json(),
+            }
+        )
+
+    messages.append(
+        {
+            "role": "user",
+            "content": email,
+        }
+    )
+
+    return messages
+
+
+def classify_email(
+    email: str,
+    config: PromptConfig,
+    llm_client=None,
+) -> ClassificationOutput:
+    if llm_client is None:
+        from .llm_client import client as llm_client
+
+    response = llm_client.responses.parse(
+        model=config.model,
+        input=build_messages(email, config),
+        text_format=ClassificationOutput,
     )
 
     if not response.output_parsed:
-        sys.exit(1)
+        raise ValueError("Model did not return valid classification output.")
 
     return response.output_parsed
