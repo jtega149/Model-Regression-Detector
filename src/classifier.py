@@ -2,9 +2,10 @@ from .llm_client import client
 from .config import PromptConfig, ClassificationOutput
 import sys
 import yaml
-from datetime import datetime
 from openai.types.responses import ResponseInputParam
+from datetime import datetime
 from typing import cast
+import uuid
 
 
 def build_messages(email: str, config: PromptConfig) -> list[dict[str, str]]:
@@ -49,9 +50,16 @@ def classify_email(
 
     response = llm_client.responses.parse(
         model=config.model,
-        input=build_messages(email, config),
+        input=cast(ResponseInputParam, build_messages(email, config)),
         text_format=ClassificationOutput,
     )
+
+    yaml_file = {
+        "version": str(uuid.uuid4()),
+        "timestamp": datetime.now(),
+        "system_prompt": config.system_prompt,
+        "few_shot_examples": config.few_shot_examples
+    }
 
     if not response.output_parsed:
         raise ValueError("Model did not return valid classification output.")

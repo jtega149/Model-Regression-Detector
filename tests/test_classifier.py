@@ -1,6 +1,7 @@
 from src.classifier import classify_email
 from src.config import PromptConfig
-import uuid
+from pathlib import Path
+import yaml
 
 TEST_BILLING = """
 Subject: Cancel subscription renewal
@@ -33,26 +34,24 @@ Could you provide more information about your service and how it works? I would 
 Thank you.
 """
 
-<<<<<<< HEAD
-def run_tests():
-    print("Billing Test: ", classify_email(TEST_BILLING, PromptConfig(version=str(uuid.uuid4()))))
-    print("Account Test:", classify_email(TEST_ACCOUNT, PromptConfig(version=str(uuid.uuid4()))))
-    print("Technical Test:", classify_email(TEST_TECHNICAL, PromptConfig(version=str(uuid.uuid4()))))
-    print("General Test", classify_email(TEST_GENERAL, PromptConfig(version=str(uuid.uuid4()))))
-=======
->>>>>>> a92cd28f48aaf21976ddc5f8a8416645c580b599
+def load_prompt_config(path: str | Path) -> PromptConfig:
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Prompt configuration file not found: {path}")
+    
+    with open(path, "r") as f:
+        raw_data = yaml.safe_load(f)
+
+    return PromptConfig(**raw_data)
+
 
 def run_tests():
-    config = load_prompt_config("prompts/classifier_v1.yaml")
+    config = load_prompt_config("./prompts/v1_classifier.yaml")
 
     print("Billing Test:", classify_email(TEST_BILLING, config))
     print("Account Test:", classify_email(TEST_ACCOUNT, config))
     print("Technical Test:", classify_email(TEST_TECHNICAL, config))
     print("General Test:", classify_email(TEST_GENERAL, config))
-    print("Billing Test: ", classify_email(TEST_BILLING, PromptConfig(version=str(uuid.uuid4()))))
-    print("Account Test:", classify_email(TEST_ACCOUNT, PromptConfig(version=str(uuid.uuid4()))))
-    print("Technical Test:", classify_email(TEST_TECHNICAL, PromptConfig(version=str(uuid.uuid4()))))
-    print("General Test", classify_email(TEST_GENERAL, PromptConfig(version=str(uuid.uuid4()))))
 
 
 if __name__ == "__main__":
