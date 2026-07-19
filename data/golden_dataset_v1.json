@@ -1,0 +1,13 @@
+
+{
+    "test_cases": [
+        {
+            "id": 1,
+            "email_text": "I need help fixing my account, it's been hacked or something, I can't login with the password I first had.",
+            "expected_category": "account",
+            "expected_summary": "Customer cannot access their account and suspects the account may have been hacked.",
+            "expected_difficulty": "easy",
+            "notes": "Test's on keywords that may exaggerate the gravity of the situation."
+        }
+    ]
+}
